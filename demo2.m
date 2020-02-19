@@ -22,3 +22,5 @@ while n
     fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
     pause(p)
 end
+
+%test
