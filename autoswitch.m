@@ -1,3 +1,13 @@
+function[] = autoswitch(delay, time)
+% AUTOSWITCH connects to a Tektronix AFG3022 Signal Generator to apply the
+%   square wave for peak performance of the cell DJH-151118-01 190329-1 at
+%   55°C. It switches this field on and off every 'delay' seconds for
+%   'time' seconds.
+%
+%   AUTOSWITCH(1)
+%
+%   Delay is set to 1 second
+
 instrreset;
 param.afg=visa('ni','USB::0x0699::0x0341::C020167::INSTR');
 fopen(param.afg);
@@ -13,14 +23,13 @@ disp('Signal Generator initiated succesfully')
 fprintf(param.afg,'SOURCE1:FREQ:FIXED 180HZ');
 fprintf(param.afg,'SOURCE1:VOLTAGE 16.3');
 
-n=1;
-disp('Signal Generator cycling on and off every 5s, press Ctrl+C to stop')
-p=1; % how long it pauses
-while n
+tic
+disp(['Signal Generator cycling on and off every ',num2stsr(delay),'s for ',num2str(time),'s'])
+while toc < time
     fprintf(param.afg,'OUTP1:STAT ON'); fprintf(param.afg,'OUTP2:STAT ON');
-    pause(p)
+    pause(delay)
     fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
-    pause(p)
+    pause(delay)
 end
 
-%test
+end
