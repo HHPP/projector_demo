@@ -24,12 +24,13 @@ fprintf(param.afg,'SOURCE1:FREQ:FIXED 180HZ');
 fprintf(param.afg,'SOURCE1:VOLTAGE 16.3');
 
 tic
-disp(['Signal Generator cycling on and off every ',num2stsr(delay),'s for ',num2str(time),'s'])
+disp(['Signal Generator cycling on and off every ',num2str(delay),'s for ',num2str(time),'s'])
 while toc < time
     fprintf(param.afg,'OUTP1:STAT ON'); fprintf(param.afg,'OUTP2:STAT ON');
     pause(delay)
     fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
     pause(delay)
 end
+fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
 
 end
