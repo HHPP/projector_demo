@@ -1,16 +1,20 @@
 classdef siggen
-    %SIGGEN Connect to lab hardware
-    %   Detailed explanation goes here
+    %SIGGEN Connect to Tektronix AFG 3022
+    %   This could be adapted to control similar Tektronix generators.
+    %   User needs to install National Instruments drivers first
+    %   (https://www.ni.com/en-gb/support/downloads/drivers/download.ni-visa.html#329456)
+    %   and MATLAB app 'Instrument Control'.
     
     properties
         deviceid
+        afg
     end
     
     methods
         function obj = siggen(deviceid)
             %SIGGEN Construct a siggen (Signal Generator) instance
             %   Provide the device id, eg:
-            %   'USB::0x0699::0x0341::C020167::INSTR'
+            %   a = siggen('USB::0x0699::0x0341::C020167::INSTR')
             %   If deviceid is empty, use default option below
             if nargin == 0
                 % Default device ID
@@ -18,13 +22,14 @@ classdef siggen
             else
                 obj.deviceid = deviceid;
             end
-            param.afg=visa('ni',obj.deviceid);
-            fopen(param.afg);
-            fprintf(param.afg,'*RST');
-            fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
+            instrreset
+            obj.afg=visa('ni',obj.deviceid);
+            fopen(obj.afg);
+            fprintf(obj.afg,'*RST');
+            fprintf(obj.afg,'OUTP1:STAT OFF'); fprintf(obj.afg,'OUTP2:STAT OFF');
         end
         
-        function [] = setup(~,flags)
+        function [] = setup(obj,flags)
             %SETUP Set starting properties
             %   i: infinite impedence
             %   q: square wave
@@ -32,42 +37,50 @@ classdef siggen
             %   f: frequency concurrent
             %   p: 180° phase change between sources
             if contains (flags, 'i')
-                fprintf(param.afg,'OUTP1:IMP INF'); fprintf(param.afg,'OUTP2:IMP INF');
+                fprintf(obj.afg,'OUTP1:IMP INF'); fprintf(obj.afg,'OUTP2:IMP INF');
             end
             if contains (flags, 'q')
-                fprintf(param.afg,'SOURCE1:FUNCTION SQUARE'); fprintf(param.afg,'SOURCE2:FUNCTION SQUARE');
+                fprintf(obj.afg,'SOURCE1:FUNCTION SQUARE'); fprintf(obj.afg,'SOURCE2:FUNCTION SQUARE');
             end
             if contains (flags, 'v')
-                fprintf(param.afg,'SOURce1:VOLTage:CONCurrent:STATe ON');
+                fprintf(obj.afg,'SOURce1:VOLTage:CONCurrent:STATe ON');
             end
             if contains (flags, 'f')
-                fprintf(param.afg,'SOURce1:FREQuency:CONCurrent ON');
+                fprintf(obj.afg,'SOURce1:FREQuency:CONCurrent ON');
             end
             if contains (flags, 'p')
-                fprintf(param.afg,'SOURce1:PHASe:INITiate');
-                fprintf(param.afg,'SOURce2:PHASe:ADJust 180 deg');
+                fprintf(obj.afg,'SOURce1:PHASe:INITiate');
+                fprintf(obj.afg,'SOURce2:PHASe:ADJust 180 deg');
             end
             disp('Signal Generator initiated succesfully')
         end
         
-        function [] = setv1(~,v1set)
+        function [] = setv1(obj,v1set)
             %SETV1 sets source 1 voltage to v1set
-            fprintf(param.afg,['SOURCE1:VOLTAGE ',num2str(v1set)]);
+            fprintf(obj.afg,['SOURCE1:VOLTAGE ',num2str(v1set)]);
         end
         
-        function [] = setf1(~,f1set)
+        function [] = setf1(obj,f1set)
             %SETF1 sets source 1 frequency to f1set
-            fprintf(param.afg,['SOURCE1:FREQ:FIXED ',num2str(f1set)]);
+            fprintf(obj.afg,['SOURCE1:FREQ:FIXED ',num2str(f1set),'HZ']);
         end
         
-        function[] = on(~)
+        function[] = on(obj)
             %ON switches both sources off
-            fprintf(param.afg,'OUTP1:STAT ON'); fprintf(param.afg,'OUTP2:STAT ON');
+            fprintf(obj.afg,'OUTP1:STAT ON'); fprintf(obj.afg,'OUTP2:STAT ON');
         end
         
-        function[] = off(~)
+        function[] = off(obj)
             %OFF switches both sources off
-            fprintf(param.afg,'OUTP1:STAT OFF'); fprintf(param.afg,'OUTP2:STAT OFF');
+            fprintf(obj.afg,'OUTP1:STAT OFF'); fprintf(obj.afg,'OUTP2:STAT OFF');
+        end
+        
+        function[] = close(obj)
+            %CLOSE switches off the generator and closes the connection.
+            %This must be done if you wish to establish a new connection in
+            %the future
+            obj.off
+            fclose(obj.afg);
         end
     end
 end
