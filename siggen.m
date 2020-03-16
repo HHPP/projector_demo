@@ -3,7 +3,6 @@ classdef siggen
     %   This could be adapted to control similar Tektronix generators.
     %   User needs to install National Instruments drivers first
     %   (https://www.ni.com/en-gb/support/downloads/drivers/download.ni-visa.html#329456)
-    %   and MATLAB app 'Instrument Control'.
     
     properties
         deviceid
